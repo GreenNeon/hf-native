@@ -1,6 +1,6 @@
-# HiFeed Native — Warehouse & Field Operations (SCOM)
+# React Native — Warehouse & Field Operations (SCOM)
 
-Aplikasi mobile berbasis **React Native** dan **Expo (SDK 57)** yang dirancang untuk operasional pergudangan dan lapangan (Field Operations) pada ekosistem **HiFeed**. Aplikasi ini memfasilitasi pencatatan mutasi stok pakan secara cepat dan akurat melalui pemindaian barcode/QR code (Inbound & Dispatch), verifikasi stok batch *real-time*, serta pencatatan buku besar mutasi (*audit ledger*).
+Aplikasi mobile berbasis **React Native** dan **Expo (SDK 57)** yang dirancang untuk operasional pergudangan dan lapangan (Field Operations. Aplikasi ini memfasilitasi pencatatan mutasi stok pakan secara cepat dan akurat melalui pemindaian barcode/QR code (Inbound & Dispatch), verifikasi stok batch *real-time*, serta pencatatan buku besar mutasi (*audit ledger*).
 
 ---
 
@@ -23,7 +23,7 @@ Aplikasi mobile berbasis **React Native** dan **Expo (SDK 57)** yang dirancang u
   - Kontrol senter (*torch*) dan pembekuan kamera (*pause/resume*) untuk menghemat daya baterai di lapangan.
   - Visual laser scanner animasi dan area pemindaian responsif.
 - **Validasi & Parsing Otomatis Payload**:
-  - Mendukung payload JSON standar HiFeed serta fallback format *pipe-delimited* (`BATCH|SKU|EXPIRED`).
+  - Mendukung payload JSON standar  serta fallback format *pipe-delimited* (`BATCH|SKU|EXPIRED`).
 - **Pencatatan Mutasi Stok (Inbound & Dispatch)**:
   - **Inbound**: Penerimaan dan penambahan kuantitas batch pakan ke gudang.
   - **Dispatch**: Pengeluaran stok pakan untuk pengiriman/distribusi dengan validasi stok tersisa secara *real-time*.
@@ -62,7 +62,7 @@ graph TD
         Cache["In-memory Mutation & Stock Cache"]
     end
 
-    subgraph Backend ["HiFeed Backend Server"]
+    subgraph Backend [" Backend Server"]
         ApiEndpoints["REST API (port 3000)\n/api/v1/inventory/*"]
     end
 
@@ -219,7 +219,7 @@ npx expo start
 
 ## 🔌 Konfigurasi & Integrasi API Backend
 
-Aplikasi berkomunikasi dengan backend HiFeed melalui endpoint REST berikut:
+Aplikasi berkomunikasi dengan backend melalui endpoint REST berikut:
 
 | Method | Endpoint | Deskripsi |
 |---|---|---|
