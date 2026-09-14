@@ -10,8 +10,14 @@ import {
 } from '../types/inventory';
 import { KNOWN_FEED_ITEMS } from '../utils/qrParser';
 
-// Base URL
-let currentApiBaseUrl = 'http://192.168.1.71:3000';
+// Base URL: Menggunakan EXPO_PUBLIC_API_BASE_URL dari environment variable Expo SDK 57
+const DEFAULT_API_BASE_URL = 'http://localhost:3000';
+const envApiUrl =
+  process.env.EXPO_PUBLIC_API_BASE_URL ||
+  process.env.EXPO_PUBLIC_API_URL ||
+  process.env.EXPO_PUBLIC_BASE_URL;
+
+let currentApiBaseUrl = (envApiUrl || DEFAULT_API_BASE_URL).replace(/\/+$/, '');
 
 export const OPERATOR_HEADERS: Record<string, string> = {
   'Content-Type': 'application/json',
@@ -121,7 +127,7 @@ async function apiFetch<T>(
       } catch (fallbackErr: any) {
         apiLogger.error(
           `${method} ${endpoint}`,
-          `Both http://192.168.1.71:3000 and 10.0.2.2:3000 failed`,
+          `Both ${targetUrl} and ${fallbackUrl} failed`,
           fallbackErr
         );
         throw fallbackErr;
