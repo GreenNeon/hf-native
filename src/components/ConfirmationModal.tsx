@@ -35,8 +35,6 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   onSuccess,
   onError,
 }) => {
-  if (!batchDetail) return null;
-
   const [actionMode, setActionMode] = useState<'INBOUND' | 'DISPATCH'>('DISPATCH');
   const [quantity, setQuantity] = useState<number>(10);
   const [notes, setNotes] = useState<string>('');
@@ -83,19 +81,21 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   const currentAvailableStock =
     liveStock !== null
       ? liveStock
-      : (batchDetail.current_qty ?? getMockStock(batchDetail.batch_number));
+      : (batchDetail?.current_qty ?? (batchDetail ? getMockStock(batchDetail.batch_number) : 0));
 
-  const displayTitle = liveBatch?.feed_item?.name || batchDetail.name;
-  const displayUnit = liveBatch?.feed_item?.unit || batchDetail.unit || 'units';
+  const displayTitle = liveBatch?.feed_item?.name || batchDetail?.name || '';
+  const displayUnit = liveBatch?.feed_item?.unit || batchDetail?.unit || 'units';
   const displayExpiry = liveBatch?.expired_date
     ? liveBatch.expired_date.split('T')[0]
-    : batchDetail.expired_date;
+    : (batchDetail?.expired_date || '');
 
   const adjustQty = (amount: number) => {
     setQuantity((prev) => Math.max(1, prev + amount));
   };
 
   const handleSubmit = async () => {
+    if (!batchDetail) return;
+
     if (quantity <= 0) {
       onError('Quantity must be greater than zero.');
       return;
@@ -142,6 +142,10 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       setIsLoading(false);
     }
   };
+
+  if (!visible || !batchDetail) {
+    return null;
+  }
 
   return (
     <Modal

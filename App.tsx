@@ -140,13 +140,15 @@ export default function App() {
           </View>
 
           {/* Confirmation Modal (Inbound, Dispatch, or Cancel) */}
-          <ConfirmationModal
-            visible={!!activeScannedDetail}
-            batchDetail={activeScannedDetail}
-            onClose={handleCloseConfirmation}
-            onSuccess={(msg) => showToast(msg, 'success')}
-            onError={(err) => showToast(err, 'error')}
-          />
+          {activeScannedDetail && (
+            <ConfirmationModal
+              visible={!!activeScannedDetail}
+              batchDetail={activeScannedDetail}
+              onClose={handleCloseConfirmation}
+              onSuccess={(msg) => showToast(msg, 'success')}
+              onError={(err) => showToast(err, 'error')}
+            />
+          )}
 
           {/* History Modal (Audit Ledger) */}
           <HistoryModal

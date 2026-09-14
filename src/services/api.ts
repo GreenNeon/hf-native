@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 import {
   ApiResponse,
+  FeedItem,
   InboundRequest,
   InboundResponse,
   ScanDispatchRequest,
@@ -8,7 +9,7 @@ import {
   StockBatch,
   StockMutation,
 } from '../types/inventory';
-import { KNOWN_FEED_ITEMS } from '../utils/qrParser';
+import { DEFAULT_FEED_ITEMS, KNOWN_FEED_ITEMS, SAMPLE_PRESETS } from '../utils/qrParser';
 
 // Base URL: Menggunakan EXPO_PUBLIC_API_BASE_URL dari environment variable Expo SDK 57
 const DEFAULT_API_BASE_URL = 'http://localhost:3000';
@@ -358,5 +359,106 @@ export async function fetchBatchByNumber(batchNumber: string): Promise<StockBatc
     apiLogger.error('BATCH', `Failed to fetch live batch details for ${batchNumber}: ${err.message}`, err);
     return null;
   }
+}
+
+/**
+ * Fetch master feed items with search filtering and offline fallback
+ * GET /api/v1/inventory/items?search=...
+ */
+export async function fetchFeedItems(search?: string): Promise<FeedItem[]> {
+  apiLogger.info('ITEMS', `Fetching feed items (search=${search || 'all'})...`);
+
+  try {
+    const query = search && search.trim() ? `?search=${encodeURIComponent(search.trim())}` : '';
+    const items = await apiFetch<FeedItem[]>(`/api/v1/inventory/items${query}`, {
+      method: 'GET',
+      headers: OPERATOR_HEADERS,
+    });
+    apiLogger.info('ITEMS', `Fetched ${items.length} feed items`);
+    return items;
+  } catch (err: any) {
+    apiLogger.error('ITEMS', `Failed to fetch items from API. Using default feed items.`, err);
+    if (!search || !search.trim()) {
+      return DEFAULT_FEED_ITEMS;
+    }
+    const q = search.trim().toLowerCase();
+    return DEFAULT_FEED_ITEMS.filter(
+      (item) =>
+        item.sku.toLowerCase().includes(q) ||
+        item.name.toLowerCase().includes(q) ||
+        item.category.toLowerCase().includes(q)
+    );
+  }
+}
+
+/**
+ * Fetch existing batches for a specific SKU or feed item
+ * GET /api/v1/inventory/batches
+ */
+export async function fetchBatchesForSku(sku: string, feedItemId?: number): Promise<StockBatch[]> {
+  apiLogger.info('BATCHES', `Fetching batches for SKU ${sku}...`);
+
+  try {
+    const query = feedItemId ? `?feed_item_id=${feedItemId}` : '';
+    const batches = await apiFetch<StockBatch[]>(`/api/v1/inventory/batches${query}`, {
+      method: 'GET',
+      headers: OPERATOR_HEADERS,
+    });
+
+    const targetSku = sku.trim().toUpperCase();
+    const filtered = batches.filter(
+      (b) =>
+        b.feed_item?.sku?.toUpperCase() === targetSku ||
+        (b.feed_item_id && b.feed_item_id === feedItemId)
+    );
+
+    apiLogger.info('BATCHES', `Found ${filtered.length} batches for SKU ${sku}`);
+    if (filtered.length > 0) {
+      return filtered;
+    }
+  } catch (err: any) {
+    apiLogger.error('BATCHES', `Failed to fetch batches from API. Using local fallback.`, err);
+  }
+
+  // Fallback from sample presets
+  const targetSku = sku.trim().toUpperCase();
+  const presetsForSku = SAMPLE_PRESETS.filter((p) => p.sku.toUpperCase() === targetSku);
+  if (presetsForSku.length > 0) {
+    return presetsForSku.map((p, idx) => ({
+      id: 900 + idx,
+      batch_number: p.batch_number,
+      feed_item: {
+        id: feedItemId || 1,
+        name: p.name,
+        sku: p.sku,
+        unit: p.unit,
+      },
+      expired_date: p.expired_date,
+      initial_qty: p.current_qty ?? 100,
+      current_qty: p.current_qty ?? 100,
+      status: 'ACTIVE' as const,
+      is_expired: false,
+      qr_payload: p.rawPayload,
+    }));
+  }
+
+  // If no preset exists, generate a sample batch representation
+  return [
+    {
+      id: 999,
+      batch_number: `BATCH-2026-${targetSku.replace(/[^A-Z0-9]/gi, '')}-A`,
+      feed_item: {
+        id: feedItemId || 1,
+        name: KNOWN_FEED_ITEMS[targetSku]?.name || `Product (${targetSku})`,
+        sku: targetSku,
+        unit: KNOWN_FEED_ITEMS[targetSku]?.unit || 'SAK (50KG)',
+      },
+      expired_date: '2026-12-31',
+      initial_qty: 50,
+      current_qty: 50,
+      status: 'ACTIVE' as const,
+      is_expired: false,
+    },
+  ];
 }
 

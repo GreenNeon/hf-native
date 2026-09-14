@@ -1,4 +1,4 @@
-import { QRPayload, ScannedBatchDetail } from '../types/inventory';
+import { FeedItem, QRPayload, ScannedBatchDetail } from '../types/inventory';
 
 export const KNOWN_FEED_ITEMS: Record<string, { name: string; category: string; unit: string; min_stock: number; default_qty: number }> = {
   'HF-BR-01': {
@@ -16,6 +16,29 @@ export const KNOWN_FEED_ITEMS: Record<string, { name: string; category: string; 
     default_qty: 45,
   },
 };
+
+export const DEFAULT_FEED_ITEMS: FeedItem[] = [
+  {
+    id: 1,
+    sku: 'HF-BR-01',
+    name: 'HiFeed Broiler Starter Super',
+    category: 'POULTRY',
+    unit: 'SAK (50KG)',
+    min_stock: 20,
+    current_stock: 120,
+    is_low_stock: false,
+  },
+  {
+    id: 2,
+    sku: 'HF-SIL-02',
+    name: 'HiFeed Silase Jagung Fermentasi',
+    category: 'RUMINANT',
+    unit: 'DRUM (100KG)',
+    min_stock: 10,
+    current_stock: 45,
+    is_low_stock: false,
+  },
+];
 
 export const SAMPLE_PRESETS: ScannedBatchDetail[] = [
   {
